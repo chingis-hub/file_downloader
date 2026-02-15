@@ -6,27 +6,19 @@ import java.io.File
 import java.io.IOException
 
 
-fun supportsRange(client: OkHttpClient, url: String): Boolean {
+// File info data class
+data class FileInfo(val length: Long, val supportsRange: Boolean)
+
+// Get file size and Range support with a single HEAD request
+fun getFileInfo(client: OkHttpClient, url: String): FileInfo? {
     val request = Request.Builder()
         .url(url)
         .head()
         .build()
-
     client.newCall(request).execute().use { response ->
-        val acceptRanges = response.header("Accept-Ranges")
-        return acceptRanges?.equals("bytes", ignoreCase = true) == true
-    }
-}
-
-fun contentLength(client: OkHttpClient, url: String): Long? {
-    val request = Request.Builder()
-        .url(url)
-        .head()
-        .build()
-
-    client.newCall(request).execute().use { response ->
-        val lengthHeader = response.header("Content-Length") ?: return null
-        return lengthHeader.toLongOrNull()
+        val length = response.header("Content-Length")?.toLongOrNull() ?: return null
+        val supports = response.header("Accept-Ranges")?.equals("bytes", true) == true
+        return FileInfo(length, supports)
     }
 }
 
@@ -101,23 +93,23 @@ fun combineTheChunks(outputFile: File, results: Array<ByteArray?>) {
 
 fun main() {
     val client = OkHttpClient()
-    val url = "http://localhost:8080/test_file.pdf"
+    val url = "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
     val outputFile = File("downloaded_file.pdf")
 
-    // Checking range support
-    val supportsPartialDownload = supportsRange(client, url)
-    println("Support partial downloading: $supportsPartialDownload")
+    // Get information about the file
+    val fileInfo = getFileInfo(client, url) ?: run {
+        println("Failed to get file info")
+        return
+    }
 
-    // Get the size of a file
-    val length = contentLength(client, url)
-    if (length == null) {
-        println("Could not determine file size")
-        return }
-    println("Content-Length: $length")
-
+    // Check whether the server supports Range requests
+    if (!fileInfo.supportsRange) {
+        println("Server does not support partial downloads (Range requests)")
+        return
+    }
     // Division into ranges
     val parts = 4
-    val ranges = splitToRanges(length, parts)
+    val ranges = splitToRanges(fileInfo.length, parts)
     println("Ranges of downloading: $ranges")
 
     // Create an array to store the results
