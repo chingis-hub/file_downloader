@@ -34,6 +34,7 @@ A Kotlin application for efficiently downloading files in chunks with parallel p
 Modify the `main` function in `Main.kt` to specify your download URL and output file:
 
 ```kotlin
+val url = "http://localhost:8080/test_file.pdf"
 val outputFile = File("downloaded_file.pdf")
 ```
 
