@@ -93,7 +93,7 @@ fun combineTheChunks(outputFile: File, results: Array<ByteArray?>) {
 
 fun main() {
     val client = OkHttpClient()
-    val url = "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
+    val url = "http://localhost:8080/test_file.pdf"
     val outputFile = File("downloaded_file.pdf")
 
     // Get information about the file
