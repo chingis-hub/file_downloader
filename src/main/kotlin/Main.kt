@@ -56,7 +56,7 @@ fun downloadAllChunks(client: OkHttpClient, url: String, ranges: List<LongRange>
         Thread {
             val chunk = downloadChunk(client, url, range)
             results[index] = chunk
-            println("Range is downloaded $index: ${range.first}-${range.last}")
+            println("Downloaded subchunk $index: ${range.first}-${range.last}")
         }
     }
 
@@ -82,48 +82,76 @@ fun downloadChunk(client: OkHttpClient, url: String, range: LongRange): ByteArra
     }
 }
 
-fun combineTheChunks(outputFile: File, results: Array<ByteArray?>) {
+
+// Download one part of a file
+fun downloadPart(client: OkHttpClient, url: String, outputFile: File, startByte: Long, partSize: Long, chunksPerPart: Int) {
+    val partRanges = splitToRanges(partSize, chunksPerPart)
+        // .map shifts ranges to the actual location of the file
+        .map { it.first + startByte..it.last + startByte }
+
+    val partResults = downloadAllChunks(client, url, partRanges)
+
     outputFile.outputStream().use { output ->
-        results.forEach { chunk ->
+        output.channel.position(startByte)
+        partResults.forEachIndexed { i, chunk ->
             chunk?.let { output.write(it) }
         }
     }
 }
 
-
-fun main() {
-    val client = OkHttpClient()
-    val url = "http://localhost:8080/test_file.pdf"
-    val outputFile = File("downloaded_file.pdf")
+// The main function is to download the file in parts
+fun downloadFileInChunks(client: OkHttpClient, url: String, outputFile: File, partSizeBytes: Long , chunksPerPart: Int): Boolean {
 
     // Get information about the file
     val fileInfo = getFileInfo(client, url) ?: run {
         println("Failed to get file info")
-        return
+        return false
     }
 
-    // Check whether the server supports Range requests
     if (!fileInfo.supportsRange) {
-        println("Server does not support partial downloads (Range requests)")
-        return
-    }
-    // Division into ranges
-    val parts = 4
-    val ranges = splitToRanges(fileInfo.length, parts)
-    println("Ranges of downloading: $ranges")
-
-    // Create an array to store the results
-    val results = downloadAllChunks(client, url, ranges)
-
-    // Check if all the parts are loaded
-    if (results.any { it == null }) {
-        println("Not all parts were successfully downloaded")
-        return
+        println("Server does not support partial downloads")
+        return false
     }
 
-    // Combine the parts into a single file
-    combineTheChunks(outputFile, results)
+    println("Total file size: ${fileInfo.length} bytes")
 
-    println("File was successfully downloaded and saved like $outputFile")
+    // Create/reset the file
+    outputFile.outputStream().use { /* just create */ }
+
+    var startByte = 0L
+    var partNumber = 1
+    // Pretend that the file is slightly larger, so any remainder is guaranteed to turn into a new part)
+    val totalParts = (fileInfo.length + partSizeBytes - 1) / partSizeBytes
+
+    while (startByte < fileInfo.length) {
+        val size = minOf(partSizeBytes, fileInfo.length - startByte)
+        println("Downloading part $partNumber/$totalParts (bytes $startByte-${startByte + size - 1})")
+        downloadPart(client, url, outputFile, startByte, size, chunksPerPart)
+        startByte += size
+        partNumber++
+    }
+
+    println("File successfully downloaded to $outputFile")
+    return true
+}
+
+fun main() {
+    val client = OkHttpClient()
+    val url = "http://localhost:8080/test3_file.pdf"
+    val outputFile = File("downloaded_file.pdf")
+
+    val success = downloadFileInChunks(
+        client = client,
+        url = url,
+        outputFile = outputFile,
+        partSizeBytes = 10 * 1024 * 1024, // 10 MB per part
+        chunksPerPart = 4
+    )
+
+    if (success) {
+        println("Download completed successfully")
+    } else {
+        println("Download failed")
+    }
 
 }
