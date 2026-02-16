@@ -1,6 +1,6 @@
 package unit_tests
 
-import com.chingis.splitToRanges
+import com.chingis.util.splitToRanges
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertEquals
 

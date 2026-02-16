@@ -1,6 +1,6 @@
 package unit_tests
 
-import com.chingis.getFileInfo
+import com.chingis.downloader.getFileInfo
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer

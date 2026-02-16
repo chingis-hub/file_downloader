@@ -4,7 +4,7 @@ import java.io.File
 import java.security.MessageDigest
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-import com.chingis.downloadFileInChunks
+import com.chingis.downloader.downloadFileInChunks
 
 class FileDownloadIntegrationTest {
 

@@ -1,6 +1,6 @@
 package unit_tests
 
-import com.chingis.downloadChunk
+import com.chingis.downloader.downloadChunk
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer

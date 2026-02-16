@@ -46,3 +46,4 @@ bin/
 /.idea/kotlinc.xml
 /downloaded_file.pdf
 /src/test/resources/test2_file.pdf
+/test_downloaded_file.pdf
