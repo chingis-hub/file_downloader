@@ -47,6 +47,22 @@ fun splitToRanges(contentLength: Long, parts: Int): List<LongRange> {
     return result
 }
 
+fun downloadChunk(client: OkHttpClient, url: String, range: LongRange): ByteArray {
+    val request = Request.Builder()
+        .url(url)
+        .addHeader("Range", "bytes=${range.first}-${range.last}")
+        .build()
+
+    client.newCall(request).execute().use { response ->
+        if (response.code != 206) {
+            throw IOException("Server does not support a partial content. Code: ${response.code}")
+        }
+
+        return response.body.bytes().takeIf { it.isNotEmpty() }
+            ?: throw IOException("Empty response")
+    }
+}
+
 fun downloadAllChunks(client: OkHttpClient, url: String, ranges: List<LongRange>): Array<ByteArray?> {
 
     val results = arrayOfNulls<ByteArray>(ranges.size)
@@ -65,23 +81,6 @@ fun downloadAllChunks(client: OkHttpClient, url: String, ranges: List<LongRange>
 
     return results
 }
-
-fun downloadChunk(client: OkHttpClient, url: String, range: LongRange): ByteArray {
-    val request = Request.Builder()
-        .url(url)
-        .addHeader("Range", "bytes=${range.first}-${range.last}")
-        .build()
-
-    client.newCall(request).execute().use { response ->
-        if (response.code != 206) {
-            throw IOException("Server does not support a partial content. Code: ${response.code}")
-        }
-
-        return response.body.bytes().takeIf { it.isNotEmpty() }
-            ?: throw IOException("Empty response")
-    }
-}
-
 
 // Download one part of a file
 fun downloadPart(client: OkHttpClient, url: String, outputFile: File, startByte: Long, partSize: Long, chunksPerPart: Int) {
