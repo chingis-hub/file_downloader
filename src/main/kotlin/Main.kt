@@ -136,7 +136,7 @@ fun downloadFileInChunks(client: OkHttpClient, url: String, outputFile: File, pa
 
 fun main() {
     val client = OkHttpClient()
-    val url = "http://localhost:8080/test3_file.pdf"
+    val url = "http://localhost:8080/test2_file.pdf"
     val outputFile = File("downloaded_file.pdf")
 
     val success = downloadFileInChunks(

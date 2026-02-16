@@ -45,3 +45,4 @@ bin/
 .DS_Store
 /.idea/kotlinc.xml
 /downloaded_file.pdf
+/src/test/resources/test2_file.pdf
