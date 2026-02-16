@@ -9,6 +9,7 @@ A Kotlin application for efficiently downloading files in chunks with parallel p
 - Automatic detection of server range support
 - Resume interrupted downloads
 - Progress tracking during download
+- SHA-256 verification for file integrity
 
 ## Requirements
 
@@ -57,9 +58,23 @@ The downloader operates in the following steps:
 
 - `getFileInfo()`: Retrieves file size and checks if the server supports range requests
 - `splitToRanges()`: Divides content into downloadable ranges
+- `downloadChunk()`: Downloads a specific byte range from the server
 - `downloadAllChunks()`: Manages parallel downloading of chunks
 - `downloadPart()`: Downloads a specific part of the file
 - `downloadFileInChunks()`: Main function that orchestrates the entire download process
+
+## Testing
+
+The project includes both unit tests and integration tests:
+
+- **Unit Tests**: Test individual components like `getFileInfo()`, `splitToRanges()`, and `downloadChunk()`
+- **Integration Tests**: Test the complete download process with a local test server
+
+To run the tests:
+
+```
+./gradlew test
+```
 
 ## License
 
