@@ -2,6 +2,8 @@
 
 A Kotlin application for efficiently downloading files in chunks with parallel processing support.
 
+📄 A detailed Design Document describing implementation decisions is available here: [DESIGN_DOCUMENT.pdf](DESIGN_DOCUMENT.pdf)
+
 ## Features
 
 - Download large files in manageable parts
